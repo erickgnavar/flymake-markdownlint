@@ -48,9 +48,9 @@
         (while (search-forward-regexp flymake-markdown--regex (point-max) t)
           (when (match-string 1)
             (let* ((line (buffer-substring (match-beginning 2) (match-end 2)))
-                   (error-point (flymake-markdownlint--get-position (string-to-number line) buffer (current-buffer)))
                    (description (buffer-substring (match-beginning 5) (match-end 5)))
-                   (dx (flymake-make-diagnostic buffer error-point (1+ error-point) :error description)))
+                   (region (flymake-diag-region buffer (string-to-number line)))
+                   (dx (flymake-make-diagnostic buffer (car region) (cdr region) :error description)))
               (add-to-list 'dxs dx))))))
     dxs))
 
@@ -59,19 +59,6 @@
   (let ((temp-file (make-temp-file "markdownlint")))
     (write-region (point-min) (point-max) temp-file nil 'quiet)
     temp-file))
-
-(defun flymake-markdownlint--get-position (line content-buffer return-buffer)
-  "Calculate position for the given LINE.
-To accomplish this we need to switch to CONTENT-BUFFER and then
-after position is calculated we have to return to RETURN-BUFFER."
-  ;;TODO: find a better way to calculate position without switching buffers.
-  (let ((temp-point nil))
-    (switch-to-buffer content-buffer)
-    (goto-char (point-min))
-    (forward-line (1- line))
-    (setq temp-point (point))
-    (switch-to-buffer return-buffer)
-    temp-point))
 
 (provide 'flymake-markdownlint)
 ;;; flymake-markdownlint.el ends here
