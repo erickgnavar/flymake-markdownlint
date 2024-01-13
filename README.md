@@ -1,6 +1,7 @@
 # flymake-markdownlint
 
-Flymake plugin to run a linter for markdown buffers using [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)
+Flymake plugin to run a linter for markdown buffers using
+[markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli)
 
 ## Installation
 

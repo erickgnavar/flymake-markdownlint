@@ -1,4 +1,4 @@
-;;; flymake-markdownlint.el --- A flymake plugin for markdown files using markdownlint-cli2
+;;; flymake-markdownlint.el --- A flymake plugin for markdown files using markdownlint-cli
 
 ;; Copyright © 2022 Erick Navarro
 ;; Author: Erick Navarro <erick@navarro.io>
@@ -15,7 +15,7 @@
 
 ;;; Code:
 
-(defcustom flymake-markdownlint-program "markdown-cli2"
+(defcustom flymake-markdownlint-program "markdownlint-cli"
   "Path to program markdownlint."
   :group 'flymake-markdownlint
   :type 'string)
@@ -36,29 +36,24 @@
 
 (defun flymake-markdownlint--check-buffer ()
   "Generate a list of diagnostics for the current buffer."
-  (let* ((buffer (current-buffer))
-         (temp-file (flymake-markdownlint--write-to-temp-file))
-         (result (shell-command-to-string (format "%s %s" flymake-markdownlint-program temp-file)))
-         ;;TODO: add support for buffer with not saved files
+  (let* ((code-buffer (current-buffer))
+         (code-content (buffer-substring-no-properties (point-min) (point-max)))
+         (args '("--stdin"))
          (dxs '()))
     (with-temp-buffer
-      (save-excursion
-        (insert result)
-        (goto-char (point-min))
-        (while (search-forward-regexp flymake-markdown--regex (point-max) t)
-          (when (match-string 1)
-            (let* ((line (match-string 2))
-                   (description (match-string 5))
-                   (region (flymake-diag-region buffer (string-to-number line)))
-                   (dx (flymake-make-diagnostic buffer (car region) (cdr region) :error description)))
-              (add-to-list 'dxs dx))))))
+      (insert code-content)
+      (apply #'call-process-region (point-min) (point-max) flymake-markdownlint-program t t nil args)
+      (goto-char (point-min))
+      (while (search-forward-regexp flymake-markdown--regex (point-max) t)
+        (when (match-string 1)
+          (let* ((line (match-string 2))
+                 (code (match-string 3))
+                 (description (match-string 5))
+                 (message (format "[%s] %s" code description))
+                 (region (flymake-diag-region code-buffer (string-to-number line)))
+                 (dx (flymake-make-diagnostic code-buffer (car region) (cdr region) :error message)))
+            (add-to-list 'dxs dx)))))
     dxs))
-
-(defun flymake-markdownlint--write-to-temp-file ()
-  "Create a temp file and write buffer's content on it."
-  (let ((temp-file (make-temp-file "markdownlint")))
-    (write-region (point-min) (point-max) temp-file nil 'quiet)
-    temp-file))
 
 (provide 'flymake-markdownlint)
 ;;; flymake-markdownlint.el ends here
