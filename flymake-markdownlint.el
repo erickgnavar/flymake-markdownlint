@@ -15,7 +15,7 @@
 
 ;;; Code:
 
-(defcustom flymake-markdownlint-program "markdownlint-cli"
+(defcustom flymake-markdownlint-program "markdownlint"
   "Path to program markdownlint."
   :group 'flymake-markdownlint
   :type 'string)
