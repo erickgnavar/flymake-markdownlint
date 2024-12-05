@@ -30,7 +30,7 @@
   "Run checker using REPORT-FN."
   (funcall report-fn (flymake-markdownlint--check-buffer)))
 
-(defconst flymake-markdown--regex
+(defconst flymake-markdownlint--regex
   "^\\(.*\\):\\([0-9]+\\) \\([a-zA-Z0-9]+\\)\/\\([a-zA-Z0-9-\/]+\\) \\(.*\\)"
   "Regex to match elements in markdownlint-cli2 output.")
 
@@ -44,7 +44,7 @@
       (insert code-content)
       (apply #'call-process-region (point-min) (point-max) flymake-markdownlint-program t t nil args)
       (goto-char (point-min))
-      (while (search-forward-regexp flymake-markdown--regex (point-max) t)
+      (while (search-forward-regexp flymake-markdownlint--regex (point-max) t)
         (when (match-string 1)
           (let* ((line (match-string 2))
                  (code (match-string 3))
